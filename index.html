@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- <link rel="stylesheet" href="./style.css">
+    <script defer src="./script.js"></script> -->
+
+    <style>
+        :root {
+            --number-of-elements: 8;
+            --sqrt: 2.82842712474619;
+        }
+
+        * {
+            box-sizing: border-box;
+            border: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        @keyframes mymove {
+            0% {
+                background-color: red;
+            }
+
+            50% {
+                background-color: green;
+            }
+
+            100% {
+                background-color: blue;
+            }
+        }
+
+        button {
+            background-color: transparent;
+        }
+
+        .images-container {
+            overflow: hidden;
+        }
+
+        .image {
+            width: calc(100vmin/var(--sqrt));
+            height: calc(100vmin/var(--sqrt));
+            margin: 0;
+            padding: 0;
+            border: 0;
+            display: inline;
+        }
+
+        .image-1 {
+            background-color: aqua;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .image-2 {
+            background-color: red;
+            position: fixed;
+            top: 0;
+            left: calc(100vw/2 - 100vmin/var(--sqrt)/2);
+        }
+
+        .image-3 {
+            background-color: blue;
+            position: fixed;
+            top: 0;
+            left: calc(100vw - 100vmin/var(--sqrt));
+        }
+
+        .image-4 {
+            background-color: green;
+            position: fixed;
+            top: calc(100vh/2 - 100vmin/var(--sqrt)/2);
+            left: calc(100vw - 100vmin/var(--sqrt));
+        }
+
+        .image-5 {
+            background-color: yellow;
+            position: fixed;
+            top: calc(100vh - 100vmin/var(--sqrt));
+            left: calc(100vw - 100vmin/var(--sqrt));
+        }
+
+        .image-6 {
+            background-color: gray;
+            position: fixed;
+            top: calc(100vh - 100vmin/var(--sqrt));
+            left: calc(100vw/2 - 100vmin/var(--sqrt)/2);
+        }
+
+        .image-7 {
+            background-color: black;
+            position: fixed;
+            top: calc(100vh - 100vmin/var(--sqrt));
+            left: 0;
+        }
+
+        .image-8 {
+            background-color: brown;
+            position: fixed;
+            top: calc(100vh/2 - 100vmin/var(--sqrt)/2);
+            left: 0;
+        }
+    </style>
+
+    <title>Image Organizer</title>
+</head>
+
+<body>
+    <div class="root">
+        <section class="images-container">
+            <div class="image image-1"><button class="button"></button></div>
+            <div class="image image-2"><button class="button"></button></div>
+            <div class="image image-3"><button class="button"></button></div>
+            <div class="image image-4"><button class="button"></button></div>
+            <div class="image image-5"><button class="button"></button></div>
+            <div class="image image-6"><button class="button"></button></div>
+            <div class="image image-7"><button class="button"></button></div>
+            <div class="image image-8"><button class="button"></button></div>
+        </section>
+    </div>
+</body>
+
+</html>
