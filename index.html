@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fighting Images</title>
+</head>
+<style>
+    @keyframes sword-move-left {
+        from {
+            transform: rotate(-45deg);
+        }
+
+        to {
+            transform: rotate(45deg);
+        }
+    }
+
+    @keyframes sword-move-right {
+        from {
+            transform: rotate(45deg);
+        }
+
+        to {
+            transform: rotate(-45deg);
+        }
+    }
+
+    :root {
+        --width: 100px;
+        --widthBubble: 100px;
+    }
+
+    * {
+        padding: 0;
+        margin: 0;
+        border: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: antiquewhite;
+    }
+
+    .bubble {
+        width: var(--widthBubble);
+        height: var(--widthBubble);
+        background-color: blue;
+        border: 2px solid black;
+        position: fixed;
+        /* top: 50vh;
+        left: 50vw; */
+        overflow: visible;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: move;
+    }
+
+    .left-hand {
+        position: absolute;
+        top: calc(var(--widthBubble) * 0.4);
+        right: calc(var(--widthBubble) * -0.1);
+        width: calc(var(--width) / 2);
+        height: calc(var(--width) / 8);
+        background-color: #4117da;
+        animation: sword-move-left 0.5s 0s infinite forwards ease-in-out alternate;
+    }
+
+    .left-palm {
+        position: absolute;
+        left: calc(var(--width) * 0.5);
+        width: calc(var(--width) * 0.15);
+        height: calc(var(--width) * 0.15);
+        border-radius: 50%;
+        background-color: red;
+    }
+
+    .left-sword {
+        transform: rotate(-30deg);
+        position: absolute;
+        left: calc(var(--width) * 0.05);
+        bottom: calc(var(--width) * 0.2);
+        width: calc(var(--width) * 0.7);
+        height: calc(var(--width) * 0.1);
+        background-color: black;
+        border-radius: 50%;
+    }
+
+    .right-hand {
+        position: absolute;
+        top: calc(var(--widthBubble) * 0.4);
+        left: calc(var(--widthBubble) * -0.1);
+        width: calc(var(--width) / 2);
+        height: calc(var(--width) / 8);
+        background-color: #4117da;
+        animation: sword-move-right 0.5s 0.8s infinite forwards ease-in-out alternate;
+    }
+
+    .right-palm {
+        position: absolute;
+        left: calc(var(--width) * -0.15);
+        width: calc(var(--width) * 0.15);
+        height: calc(var(--width) * 0.15);
+        border-radius: 50%;
+        background-color: red;
+
+    }
+
+    .right-sword {
+        transform: rotate(30deg);
+        position: absolute;
+        right: calc(var(--width) * 0.05);
+        bottom: calc(var(--width) * 0.2);
+        width: calc(var(--width) * 0.7);
+        height: calc(var(--width) * 0.1);
+        background-color: orange;
+        border-radius: 50%;
+    }
+
+    #configurations {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    button {
+        padding: 1rem;
+        text-align: center;
+        border-radius: 5%;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        background-color: aquamarine;
+        /* width: 20rem; */
+    }
+
+    #health-bar {
+        position: relative;
+        top: calc(var(--widthBubble) * -0.55);
+        /* left: 400px; */
+        width: calc(var(--widthBubble) / 2);
+        height: calc(var(--width) / 8);
+        background-color: red;
+    }
+
+    .health {
+        background-color: green;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<body>
+    <div id="health-bar">
+        <div class="health">
+        </div>
+    </div>
+    <div id="configurations">
+        <div>
+            <button onclick="startInterval()">Click To Start</button>
+        </div>
+    </div>
+
+    <div class="bubbles-container">
+    </div>
+
+
+    <div hidden class="left-hand">
+        <div class="left-palm">
+            <div class="left-sword"></div>
+        </div>
+    </div>
+    <div hidden class="right-hand">
+        <div class="right-palm">
+            <div class="right-sword"></div>
+        </div>
+    </div>
+
+
+    <script>
+
+        let configurationContainer = document.querySelector('#configurations')
+        configurationContainer.style.display = 'none'
+
+        const MAX_VELOCITY = 1
+        let GRAVITY = 0.0005
+        const SCREEN_WIDTH = window.innerWidth
+        const SCREEN_HEIGHT = window.innerHeight
+        const movingBubbles = []
+        let imagesArray = []
+        const OBJECT_WIDTH = Math.sqrt(SCREEN_WIDTH * SCREEN_HEIGHT / 52)
+        const INITIAL_HEALTH = 30 * MAX_VELOCITY
+
+        fetch('./images/')
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const html = parser.parseFromString(data, 'text/html');
+                const images = Array.from(html.getElementsByTagName('a'))
+                    .filter(link => link.href.match(/\.(jpe?g|png|gif)$/i))
+                    .map(link => link.href.replace(window.location.href, ''));
+
+                imagesArray = [...images]
+
+                // let INITIAL_HEALTH = imagesArray.length * MAX_VELOCITY * 100
+
+                renderImages()
+
+                configurationContainer.style.display = 'flex'
+
+                console.log(imagesArray)
+            });
+
+        const renderImages = () => {
+
+            if (imagesArray && imagesArray.length > 0) {
+                for (let i = 0; i < imagesArray.length; i++) {
+
+                    // var img = document.createElement("img");
+                    // img.src = e.target.result;
+                    // img.style.maxWidth = `${OBJECT_WIDTH * 1.2}px`
+
+
+                    var healthBar = document.querySelector('#health-bar')
+                    var healthBarClone = healthBar.cloneNode(true)
+                    healthBarClone.childNodes[1].classList.add('health-' + i)
+                    healthBarClone.hidden = false
+
+                    var lefHand = document.querySelector('.left-hand')
+                    var leftHandClone = lefHand.cloneNode(true)
+                    leftHandClone.hidden = false
+
+                    var rightHand = document.querySelector('.right-hand')
+                    var rightHandClone = rightHand.cloneNode(true)
+                    rightHandClone.hidden = false
+
+                    var bubbleDiv = document.createElement("div");
+                    bubbleDiv.classList.add('bubble')
+                    bubbleDiv.style.backgroundImage = `url(${imagesArray[i]})`;
+                    bubbleDiv.style.backgroundRepeat = 'no-repeat';
+                    bubbleDiv.style.backgroundSize = 'cover';
+                    bubbleDiv.style.backgroundPosition = 'center';
+                    bubbleDiv.draggable = "true";
+                    // bubbleDiv.appendChild(img)
+                    bubbleDiv.appendChild(leftHandClone)
+                    bubbleDiv.appendChild(rightHandClone)
+                    bubbleDiv.appendChild(healthBarClone)
+
+
+                    document.querySelector(".bubbles-container").appendChild(bubbleDiv);
+                }
+            }
+
+        }
+
+        const startInterval = () => {
+            document.querySelector("#configurations").style.display = 'none'
+
+            createMovingBubbles()
+            // addDragging()
+            setInterval(() => beginBubbleMovement(), 10)
+        }
+
+        const createMovingBubbles = () => {
+
+            let root = document.querySelector(':root')
+            root.style.setProperty('--widthBubble', OBJECT_WIDTH + 'px')
+            root.style.setProperty('--width', OBJECT_WIDTH / 2 + 'px')
+
+            let bubbles = document.querySelectorAll('.bubble')
+            console.log(bubbles.length)
+
+
+            bubbles.forEach(bubble => {
+                let colorCodeInDecimal = Math.random() * 16777215 + 255
+                let colorCodeInDecimalRounded = Math.round(colorCodeInDecimal)
+                let colorCodeInHexadecimal = (colorCodeInDecimalRounded).toString(16)
+                bubble.style.backgroundColor = '#' + colorCodeInHexadecimal
+            })
+
+
+            bubbles.forEach((bubble, index) => {
+                let xCoordinate = Math.random() * (SCREEN_WIDTH - OBJECT_WIDTH)
+                let yCoordinate = Math.random() * (SCREEN_HEIGHT - OBJECT_WIDTH)
+
+                let othersCondition = movingBubbles.some(mb => {
+                    let dx = mb.x - xCoordinate
+                    let dy = mb.y - yCoordinate
+
+                    let mag = Math.sqrt(dx * dx + dy * dy)
+
+                    return mag <= OBJECT_WIDTH
+                })
+
+                let screenCondition = xCoordinate < 0 ||
+                    (xCoordinate + OBJECT_WIDTH) >= SCREEN_WIDTH ||
+                    yCoordinate < 0 ||
+                    (yCoordinate + OBJECT_WIDTH) >= SCREEN_HEIGHT
+
+                let maxNumber = SCREEN_WIDTH * SCREEN_HEIGHT / OBJECT_WIDTH
+
+                while (othersCondition || screenCondition || movingBubbles.length >= maxNumber) {
+                    xCoordinate = Math.random() * (SCREEN_WIDTH - OBJECT_WIDTH * 1.02) + 2
+                    yCoordinate = Math.random() * (SCREEN_HEIGHT - OBJECT_WIDTH * 1.02) + 2
+
+                    othersCondition = movingBubbles.some((mb, j) => {
+                        if (index == j) {
+                            return false
+                        }
+                        let dx = mb.x - xCoordinate
+                        let dy = mb.y - yCoordinate
+
+                        let mag = Math.sqrt(dx * dx + dy * dy)
+
+                        return mag <= OBJECT_WIDTH
+                    })
+
+                    screenCondition = xCoordinate < 0 ||
+                        (xCoordinate + OBJECT_WIDTH) >= SCREEN_WIDTH ||
+                        yCoordinate < 0 ||
+                        (yCoordinate + OBJECT_WIDTH) >= SCREEN_HEIGHT
+                }
+
+                movingBubbles.push({
+                    bubble: bubble,
+                    x: xCoordinate,
+                    y: yCoordinate,
+                    vx: Math.random() * MAX_VELOCITY,
+                    vy: Math.random() * MAX_VELOCITY,
+                    health: INITIAL_HEALTH
+                })
+
+            })
+
+        }
+
+        const adjustBubbleInsideScreen = (obj) => {
+            let rand = (Math.random() + 1)
+
+            if (obj.x <= 0) {
+                obj.x = 1
+                obj.vx = -1 * obj.vx
+                obj.vx *= rand
+                obj.vy *= rand
+            }
+
+            if ((obj.x + OBJECT_WIDTH) >= SCREEN_WIDTH) {
+                obj.x = SCREEN_WIDTH - OBJECT_WIDTH - 1
+                obj.vx = -1 * obj.vx
+                obj.vx *= rand
+                obj.vy *= rand
+            }
+
+            if (obj.y <= 0) {
+                obj.y = 1
+                obj.vy = -1 * obj.vy
+                obj.vx *= rand
+                obj.vy *= rand
+            }
+
+            if ((obj.y + OBJECT_WIDTH) >= SCREEN_HEIGHT) {
+                obj.y = SCREEN_HEIGHT - OBJECT_WIDTH - 1
+                obj.vy = -1 * obj.vy
+                obj.vx *= rand
+                obj.vy *= rand
+            }
+
+            obj.vx = Math.abs(obj.vx) >= MAX_VELOCITY ? Math.sign(obj.vx) * MAX_VELOCITY : obj.vx
+            obj.vy = Math.abs(obj.vy) >= MAX_VELOCITY ? Math.sign(obj.vy) * MAX_VELOCITY : obj.vy
+
+        }
+
+        const addDragging = () => {
+            const draggables = document.querySelectorAll('.bubble');
+            let currentDraggable = null;
+            let initialX;
+            let initialY;
+            let currentX;
+            let currentY;
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('mousedown', dragStart);
+                draggable.addEventListener('mousemove', drag);
+                draggable.addEventListener('mouseup', dragEnd);
+            });
+
+            function dragStart(e) {
+                currentDraggable = e.target;
+                initialX = e.clientX - currentDraggable.offsetLeft;
+                initialY = e.clientY - currentDraggable.offsetTop;
+            }
+
+            function drag(e) {
+                if (currentDraggable) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    currentDraggable.style.left = currentX + 'px';
+                    currentDraggable.style.top = currentY + 'px';
+                }
+            }
+
+            function dragEnd(e) {
+                currentDraggable = null;
+            }
+
+        }
+
+        const beginBubbleMovement = () => {
+            for (let i = 0; i < movingBubbles.length; i++) {
+
+                let obj = movingBubbles[i]
+
+                obj.bubble.children[2].children[0].style.width = (obj.health / INITIAL_HEALTH * 100) + '%'
+
+                if (obj.health <= 0) {
+                    obj.bubble.style.display = 'none'
+                    movingBubbles.splice(i, 1)
+                    continue;
+                }
+
+                GRAVITY = (1 - movingBubbles.length / imagesArray.length) * 0.002
+
+                obj.x += obj.vx
+                obj.y += obj.vy
+
+                adjustBubbleInsideScreen(obj)
+
+                for (let j = 0; j < movingBubbles.length; j++) {
+
+                    if (i === j) {
+                        continue;
+                    }
+
+                    let neighbor = movingBubbles[j]
+
+                    let diffX = neighbor.x - obj.x
+                    let diffY = neighbor.y - obj.y
+
+                    let distance = Math.sqrt(diffX * diffX + diffY * diffY)
+
+                    let rx = diffX / distance
+                    let ry = diffY / distance
+
+                    obj.vx += rx * GRAVITY
+                    obj.vy += ry * GRAVITY
+
+                    if (distance <= OBJECT_WIDTH) {
+
+
+
+                        let overlapOffsetMag = (OBJECT_WIDTH - distance)
+                        let overlapOffsetX = overlapOffsetMag * -1 * rx
+                        let overlapOffsetY = overlapOffsetMag * -1 * ry
+
+
+                        let dotProduct1 = obj.vx * rx + obj.vy * ry
+                        let vOffsetX1 = dotProduct1 * rx
+                        let vOffsetY1 = dotProduct1 * ry
+
+
+
+                        let dotProduct2 = -1 * neighbor.vx * rx + -1 * neighbor.vy * ry
+                        let vOffsetX2 = -1 * dotProduct2 * rx
+                        let vOffsetY2 = -1 * dotProduct2 * ry
+
+
+                        let objMag = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy)
+                        let ox = 0
+                        let oy = 0
+
+                        if (objMag > 0) {
+                            ox = obj.vx / objMag
+                            oy = obj.vy / objMag
+                        }
+
+                        let crossZ = rx * oy + (-1) * ry * ox
+                        let crossX3 = -1 * Math.sign(crossZ) * ry
+                        let crossY3 = Math.sign(crossZ) * rx
+                        let dotProduct3 = obj.vx * crossX3 + obj.vy * crossY3
+                        let vOffsetX3 = dotProduct3 * crossX3
+                        let vOffsetY3 = dotProduct3 * crossY3
+
+                        let dotProduct4 = -1 * neighbor.vx * crossX3 + (-1) * neighbor.vy * crossY3
+                        let vOffsetX4 = -1 * dotProduct4 * crossX3
+                        let vOffsetY4 = -1 * dotProduct4 * crossY3
+
+
+                        let rand = (Math.random() + 1)
+                        neighbor.vx = vOffsetX1 + vOffsetX4
+                        // neighbor.vx *= rand
+                        neighbor.vx = Math.abs(neighbor.vx) >= MAX_VELOCITY ? Math.sign(neighbor.vx) * MAX_VELOCITY : neighbor.vx
+                        neighbor.vy = vOffsetY1 + vOffsetY4
+                        // neighbor.vy *= rand
+                        neighbor.vy = Math.abs(neighbor.vy) >= MAX_VELOCITY ? Math.sign(neighbor.vy) * MAX_VELOCITY : neighbor.vy
+                        neighbor.health -= obj.health > 0 ? Math.abs(vOffsetX1) + Math.abs(vOffsetY1) : 0
+
+                        obj.vx = vOffsetX3 + vOffsetX2
+                        // obj.vx *= rand
+                        obj.vx = Math.abs(obj.vx) >= MAX_VELOCITY ? Math.sign(obj.vx) * MAX_VELOCITY : obj.vx
+                        obj.vy = vOffsetY3 + vOffsetY2
+                        // obj.vy *= rand
+                        obj.vy = Math.abs(obj.vy) >= MAX_VELOCITY ? Math.sign(obj.vy) * MAX_VELOCITY : obj.vy
+                        obj.health -= neighbor.health > 0 ? Math.abs(vOffsetX2) + Math.abs(vOffsetY2) : 0
+                        //////////////////////////////////////////////////////////////////
+                        obj.x += obj.vx
+                        obj.y += obj.vy
+
+                        neighbor.x += neighbor.vx
+                        neighbor.y += neighbor.vy
+                        //////////////////////////////////////////////////////////////////
+                        // while (distance <= OBJECT_WIDTH) {
+                        //     obj.x += obj.vx
+                        //     obj.y += obj.vy
+
+                        //     neighbor.x += neighbor.vx
+                        //     neighbor.y += neighbor.vy
+
+                        //     adjustBubbleInsideScreen(obj)
+                        //     adjustBubbleInsideScreen(neighbor)
+
+                        //     // obj.bubble.style.left = obj.x + 'px'
+                        //     // obj.bubble.style.bottom = obj.y + 'px'
+
+                        //     // neighbor.bubble.style.left = neighbor.x + 'px'
+                        //     // neighbor.bubble.style.bottom = neighbor.y + 'px'
+
+                        //     diffX = neighbor.x - obj.x
+                        //     diffY = neighbor.y - obj.y
+
+                        //     distance = Math.sqrt(diffX * diffX + diffY * diffY)
+                        // }
+
+
+                    }
+
+                }
+
+                obj.bubble.style.transform = `translate(${obj.x}px,${obj.y}px)`
+                // obj.bubble.style.left = obj.x + 'px'
+                // obj.bubble.style.bottom = obj.y + 'px'
+            }
+        }
+
+    </script>
+</body>
+
+</html>
