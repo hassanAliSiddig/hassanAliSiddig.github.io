@@ -193,30 +193,48 @@
         const SCREEN_WIDTH = window.innerWidth
         const SCREEN_HEIGHT = window.innerHeight
         const movingBubbles = []
-        let imagesArray = []
+        let imagesArray = [
+            "/images/aaref-min.jpg",
+            "/images/dr_ahmed-min.jpg",
+            "/images/dr_hassan-min.jpg",
+            "/images/Emad-min.jpg",
+            "/images/haddad_bkp-min.jpg",
+            "/images/hassan-min.jpg",
+            "/images/khairy-min.jpg",
+            "/images/messi-min.jpg",
+            "/images/naruto-min.jpg",
+            "/images/ronaldo-min.jpg",
+            "/images/sasuke-min.jpg",
+            "/images/shareef-min.JPG",
+            "/images/yousif-min.jpg"
+        ]
         const OBJECT_WIDTH = Math.sqrt(SCREEN_WIDTH * SCREEN_HEIGHT / 52)
         const INITIAL_HEALTH = 30 * MAX_VELOCITY
 
-        fetch('./images/')
-            .then(response => response.text())
-            .then(data => {
-                const parser = new DOMParser();
-                const html = parser.parseFromString(data, 'text/html');
-                const images = Array.from(html.getElementsByTagName('a'))
-                    .filter(link => link.href.match(/\.(jpe?g|png|gif)$/i))
-                    .map(link => link.href.replace(window.location.href, ''));
+        // fetch('./images/')
+        //     .then(response => response.text())
+        //     .then(data => {
+        //         const parser = new DOMParser();
+        //         const html = parser.parseFromString(data, 'text/html');
+        //         const images = Array.from(html.getElementsByTagName('a'))
+        //             .filter(link => link.href.match(/\.(jpe?g|png|gif)$/i))
+        //             .map(link => link.href.replace(window.location.href, ''));
 
-                imagesArray = [...images]
+        //         imagesArray = [...images]
 
-                // let INITIAL_HEALTH = imagesArray.length * MAX_VELOCITY * 100
+        //         // let INITIAL_HEALTH = imagesArray.length * MAX_VELOCITY * 100
 
-                renderImages()
+        //         renderImages()
 
-                configurationContainer.style.display = 'flex'
 
-                console.log(imagesArray)
-            });
+        //         console.log(imagesArray)
+        //     });
 
+        document.addEventListener("DOMContentLoaded", function () {
+            configurationContainer.style.display = 'flex'
+            renderImages()
+        });
+       
         const renderImages = () => {
 
             if (imagesArray && imagesArray.length > 0) {
